@@ -1,0 +1,9 @@
+#!/usr/bin/env perl
+# vim:ft=perl
+use strict;
+use warnings;
+use lib "lib";
+use Grammar;
+
+# USAGE genall < grammar.file
+print "$_\n" for @{Grammar::genall(Grammar::parse(do { local $/; <STDIN> }), {@ARGV})};
