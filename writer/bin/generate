@@ -5,6 +5,11 @@ use warnings;
 use lib "lib";
 use Grammar;
 
-# USAGE generate < grammar.file
-my $s = Grammar::generate(Grammar::parse(do { local $/; <STDIN> }), {@ARGV}, $Grammar::stdlib);
-print "$s\n";
+# USAGE generate N [KEY VALUE [KEY VALUE ...]] < grammar.file
+my $ast = Grammar::parse(do { local $/; <STDIN> });
+
+my $N = shift @ARGV;
+while ($N--) {
+	my $s = Grammar::generate($ast, {@ARGV});
+	print "$s\n";
+}
