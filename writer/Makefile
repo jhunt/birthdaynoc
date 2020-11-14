@@ -4,6 +4,9 @@ writer:
 examples: writer
 	docker run --rm -i bdaynoc/writer bin/genall < examples/bdaynoc.g \
 	  subnet a.b.c.d/m n 25 years 15 location somewhere
+example: writer
+	docker run --rm -i bdaynoc/writer bin/generate < examples/bdaynoc.g \
+	  subnet a.b.c.d/m n 25 years 15 location somewhere
 
 test:
 	docker build -t bdaynoc/writer:test -f Dockerfile.test .

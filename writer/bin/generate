@@ -1,0 +1,10 @@
+#!/usr/bin/env perl
+# vim:ft=perl
+use strict;
+use warnings;
+use lib "lib";
+use Grammar;
+
+# USAGE generate < grammar.file
+my $s = Grammar::generate(Grammar::parse(do { local $/; <STDIN> }), {@ARGV}, $Grammar::stdlib);
+print "$s\n";

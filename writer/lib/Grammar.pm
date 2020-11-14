@@ -26,7 +26,68 @@ our $stdlib = {
 };
 
 #
-# Exhaustively generate all possible matches, given a set
+# Randomly generate a single sentence, given a set of input
+# parameters and a standard library of functions.  Branches
+# that reference undefined variables will be ignored.
+#
+# If no standard library is given (i.e. `$fns` is undef),
+# the default $Grammar::stdlib will be used implicitly.
+#
+sub generate {
+	my ($ast, $vars, $fns) = @_;
+	$fns ||= $Grammar::stdlib;
+	return join(' ', _generate_production($ast, $ast->{_}, $vars, $fns));
+}
+
+sub _pick_random {
+	my ($from, $weight_fn) = @_;
+	my @pool;
+
+	for (@$from) {
+		my $weight = $weight_fn ? $weight_fn->($_) : 1;
+		while ($weight--) {
+			push @pool, $_;
+		}
+	}
+
+	return $pool[int(rand(scalar @pool))];
+}
+
+sub _generate_production {
+	my ($ast, $production, $vars, $fns) = @_;
+
+	my @branches = grep { _needs_met($_->{needs}, $vars, $fns) } @{ $production->{branches} };
+	my $branch = _pick_random(\@branches, sub { $_[0]->{weight} || 10 });
+
+	return _generate_rule($ast, $branch->{rule}, $vars, $fns);
+}
+
+sub _generate_rule {
+	my ($ast, $rule, $vars, $fns) = @_;
+
+	my @s;
+	for my $r (@$rule) {
+		if ($r->{type} eq 'literal') {
+			push @s, $r->{value};
+
+		} elsif ($r->{type} eq 'reference') {
+			die "reference to undefined var!" unless exists $vars->{$r->{value}};
+			my $v = $vars->{$r->{value}};
+			if ($r->{fn}) {
+				die "reference to undefined function!" unless exists $fns->{$r->{fn}};
+				$v = $fns->{$r->{fn}}->($v);
+			}
+			push @s, $v;
+
+		} elsif ($r->{type} eq 'production') {
+			@s = (@s, _generate_production($ast, $ast->{$r->{value}}, $vars, $fns));
+		}
+	}
+	return @s;
+}
+
+#
+# Exhaustively generate all possible sentences, given a set
 # of input parameters and a standard library of functions.
 #
 # If no standard library is given (i.e. `$fns` is undef),
