@@ -6,4 +6,4 @@ use lib "lib";
 use Grammar;
 
 # USAGE genall < grammar.file
-print "$_\n" for @{Grammar::genall(Grammar::parse(do { local $/; <STDIN> }), {@ARGV})};
+print "$_\n" for @{Grammar::genall(Grammar::parse(do { local $/; <STDIN> }), {@ARGV}, $Grammar::stdlib)};

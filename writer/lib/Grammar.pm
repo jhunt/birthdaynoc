@@ -2,6 +2,18 @@ package Grammar;
 use strict;
 use warnings;
 
+our $stdlib = {
+	ord => sub {
+		my ($n) = @_;
+		my $s = "$n";
+
+		if ($s =~ m/1$/ && $s !~ m/11$/) { return "${s}st"; }
+		if ($s =~ m/2$/ && $s !~ m/12$/) { return "${s}nd"; }
+		if ($s =~ m/3$/ && $s !~ m/13$/) { return "${s}rd"; }
+		return "${s}th";
+	},
+};
+
 sub genall {
 	my ($ast, $vars, $fns) = @_;
 	return [map { join(' ', @$_) } _genall_production($ast, $ast->{_}, $vars, $fns)];
