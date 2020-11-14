@@ -1,0 +1,7 @@
+FROM perl:5.32 AS build
+RUN cpanm Carton
+
+WORKDIR /app
+COPY cpanfile .
+RUN carton install
+COPY . .

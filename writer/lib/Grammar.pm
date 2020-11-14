@@ -2,7 +2,18 @@ package Grammar;
 use strict;
 use warnings;
 
+#
+# $Grammar::stdlib provides some basic text formatting
+# functions that are expected to be useful in a variety
+# of contexts.
+#
+# If you don't specify an explicitly library set, the
+# generator functions (genall, generate, etc.) will use
+# this library, implicitly.
+#
 our $stdlib = {
+
+	# ord($ref) - get numeric ordinal (i.e. '1st' from '1')
 	ord => sub {
 		my ($n) = @_;
 		my $s = "$n";
@@ -14,9 +25,20 @@ our $stdlib = {
 	},
 };
 
+#
+# Exhaustively generate all possible matches, given a set
+# of input parameters and a standard library of functions.
+#
+# If no standard library is given (i.e. `$fns` is undef),
+# the default $Grammar::stdlib will be used implicitly.
+#
 sub genall {
 	my ($ast, $vars, $fns) = @_;
-	return [map { join(' ', @$_) } _genall_production($ast, $ast->{_}, $vars, $fns)];
+	$fns ||= $Grammar::stdlib;
+	return [
+		map { join(' ', @$_) }
+		_genall_production($ast, $ast->{_}, $vars, $fns)
+	];
 }
 
 sub _genall_production {
