@@ -23,6 +23,13 @@ our $stdlib = {
 		if ($s =~ m/3$/ && $s !~ m/13$/) { return "${s}rd"; }
 		return "${s}th";
 	},
+
+	# mon($n) - turn a month number (1-12) into a name
+	mon => sub {
+		my ($n) = @_;
+		my @names = qw(january february march april may june july august september october november december);
+		return $names[$n-1];
+	},
 };
 
 #
