@@ -358,7 +358,7 @@ sub tokenize {
 				value => 'syntax error',
 				at    => $1,
 			};
-			return @tokens;
+			return \@tokens;
 		}
 	}
 
