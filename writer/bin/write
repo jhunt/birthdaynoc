@@ -7,6 +7,7 @@ use Grammar;
 use DBI;
 use DBD::Pg;
 use Redis::Client;
+use List::Util qw/shuffle/;
 
 $ENV{DATABASE_DSN}      or die "no \$DATABASE_DSN found in environment.\n";
 $ENV{DATABASE_USERNAME} or die "no \$DATABASE_USERNAME found in environment.\n";
@@ -26,18 +27,18 @@ my $st = $dbh->prepare('SELECT * FROM source_material()')
 	or die "failed to prepare SQL query: ".$dbh->errstr."\n";
 $st->execute();
 
-my %seen;
+my %tweets;
 my $ast = Grammar::parse(do { local $/; <> });
 while (my $data = $st->fetchrow_hashref) {
 	my $key = sprintf('tw.%02d%02d', $data->{mm}, $data->{dd});
-	if (!$seen{$key}) {
-		$rd->del($key);
-		$seen{$key} = 1;
-	}
-
-	my $tweet = Grammar::generate($ast, $data);
-	$tweet =~ s/\s+([.;,)])/$1/g;
-	$rd->lpush($key, $tweet);
+	push @{$tweets{$key}}, Grammar::generate($ast, $data);
 }
 $dbh->disconnect;
-exit 0;
+
+for my $key (keys %tweets) {
+	$rd->del($key);
+	for my $tweet (shuffle @{$tweets{$key}}) {
+		$tweet =~ s/\s+([.;,)])/$1/g;
+		$rd->lpush($key, $tweet);
+	}
+}
