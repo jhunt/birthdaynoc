@@ -68,7 +68,7 @@ func main() {
 	})
 	_, err := rd.Ping(context.TODO()).Result()
 	if err != nil {
-		fmt.Printf("redis oops: %s\n")
+		fmt.Printf("redis oops: %s\n", err)
 		os.Exit(2)
 	}
 
