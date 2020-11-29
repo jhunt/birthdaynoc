@@ -1,2 +1,5 @@
 # carton
 requires 'Test::Deep' => '0';
+requires 'DBI' => '0';
+requires 'DBD::Pg' => '0';
+requires 'Redis::Client' => '0';

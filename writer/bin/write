@@ -1,0 +1,43 @@
+#!/usr/bin/env perl
+# vim:ft=perl
+use strict;
+use warnings;
+use lib "lib";
+use Grammar;
+use DBI;
+use DBD::Pg;
+use Redis::Client;
+
+$ENV{DATABASE_DSN}      or die "no \$DATABASE_DSN found in environment.\n";
+$ENV{DATABASE_USERNAME} or die "no \$DATABASE_USERNAME found in environment.\n";
+$ENV{DATABASE_PASSWORD} or die "no \$DATABASE_PASSWORD found in environment.\n";
+
+$ENV{REDIS_HOST} or die "no \$REDIS_HOST found in environment.\n";
+
+print "db is at $ENV{DATABASE_DSN}\n";
+print "redis is at $ENV{REDIS_HOST}\n";
+
+my $dbh = DBI->connect($ENV{DATABASE_DSN}, $ENV{DATABASE_USERNAME}, $ENV{DATABASE_PASSWORD}, {AutoCommit => 0})
+	or die "failed to connect to database: $!\n";
+
+my $rd = Redis::Client->new(host => $ENV{REDIS_HOST}, port => $ENV{REDIS_PORT} || 6379);
+
+my $st = $dbh->prepare('SELECT * FROM source_material()')
+	or die "failed to prepare SQL query: ".$dbh->errstr."\n";
+$st->execute();
+
+my %seen;
+my $ast = Grammar::parse(do { local $/; <> });
+while (my $data = $st->fetchrow_hashref) {
+	my $key = sprintf('tw.%02d%02d', $data->{mm}, $data->{dd});
+	if (!$seen{$key}) {
+		$rd->del($key);
+		$seen{$key} = 1;
+	}
+
+	my $tweet = Grammar::generate($ast, $data);
+	$tweet =~ s/\s+([.;,)])/$1/g;
+	$rd->lpush($key, $tweet);
+}
+$dbh->disconnect;
+exit 0;

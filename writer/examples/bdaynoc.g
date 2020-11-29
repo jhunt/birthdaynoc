@@ -1,4 +1,4 @@
-_ : <greeting> "to" $subnet <clarifier> <followup> <hashtags>
+_ : <greeting> "to" $network <clarifier> <followup> <hashtags>
   ;
 
 greeting : "wishing a" <adj> <bday>
@@ -32,11 +32,11 @@ followup :
          | ";" <born-today>
          ;
 
-age-today : "it turns" $years "today!"
-          | "celebrating" $years "years in" $location
-          | "celebrating" $years "years"
-          | "happy" ord($years)
-          | "you only get to turn" $years "once!"
+age-today : "it turns" $age "today!"
+          | "celebrating" $age "years in" $location
+          | "celebrating" $age "years"
+          | "happy" ord($age)
+          | "you only get to turn" $age "once!"
           ;
 
 born-today : "born on this day in" $year
@@ -44,5 +44,6 @@ born-today : "born on this day in" $year
 
 hashtags : "#birthdaynoc"
          | "#ipv4 #NetworksHaveFeelingsToo"
+         | "#robot #linode #lke"
          |
          ;
