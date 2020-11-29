@@ -1,0 +1,31 @@
+#!/bin/bash
+set -eu
+
+if [[ -z ${CACHE_DIR:-} ]]; then
+  CACHE_DIR=$PWD/.cache
+fi
+mkdir -p $CACHE_DIR
+
+get() {
+  local url=$1
+  local sha1=$(echo -n "$1" | sha1sum | awk '{ print $1 }')
+  if [[ ! -f ${CACHE_DIR}/${sha1} ]]; then
+    curl -sLo ${CACHE_DIR}/${sha1} "$1"
+  fi
+  echo "${CACHE_DIR}/${sha1}"
+}
+
+baseurl=https://www.nirsoft.net/countryip/
+all=$(get $baseurl)
+echo >&2 "writing ip range information to $PWD/ips.csv..."
+for cc in $(awk -F\" '/<td><a href=".*\.html">.*<.a>/ { print $2 }' < $all); do
+	cc=${cc%.html}
+	cat $(get $baseurl/${cc}.csv) | tr -d '\r' | grep -v '^$' | sed -e s"/^/$cc,/"
+done > ips.csv
+
+echo >&2 "writing country insertion queries to $PWD/cc.sql..."
+perl -e 'while (<>) { chomp; next unless m/<td><a href="(.*).html">(.*)<\/a>/; print ":$1|$2#\n";}' < $all | \
+	sed -e "s/^:/INSERT INTO countries (code, name) VALUES ('/" | \
+	sed -e "s/|/', '/" | \
+	sed -e "s/#/') ON CONFLICT (code) DO NOTHING;/" \
+    > cc.sql

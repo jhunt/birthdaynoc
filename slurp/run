@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+./fetch
+cat cc.sql
+./munge < ips.csv
