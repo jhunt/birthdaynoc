@@ -1,16 +1,20 @@
-N ?= 1
+N          ?= 1
+IMAGE_NAME ?= iamjameshunt/bdaynoc-writer
 
-writer:
-	docker build -t bdaynoc/writer .
+build:
+	docker build -t $(IMAGE_NAME) .
 
-examples: writer
-	docker run --rm -i bdaynoc/writer bin/genall < examples/bdaynoc.g \
+push: build
+	docker push $(IMAGE_NAME)
+
+examples: build
+	docker run --rm -i $(IMAGE_NAME) bin/genall < examples/bdaynoc.g \
 	  subnet a.b.c.d/m n 25 years 15 location somewhere
-example: writer
-	docker run --rm -i bdaynoc/writer bin/generate $(N) < examples/bdaynoc.g \
+example: build
+	docker run --rm -i $(IMAGE_NAME) bin/generate $(N) < examples/bdaynoc.g \
 	  subnet a.b.c.d/m n 25 years 15 location somewhere
 
 test:
-	docker build -t bdaynoc/writer:test -f Dockerfile.test .
+	docker build -t $(IMAGE_NAME):test -f Dockerfile.test .
 	docker run --rm -v $(PWD)/t:/app/t \
-	  bdaynoc/writer:test prove -lv t/*.t
+	  $(IMAGE_NAME):test prove -lv t/*.t

@@ -7,8 +7,9 @@ COPY cpanfile .
 RUN carton install
 
 FROM alpine:3
-RUN apk add perl
+RUN apk add perl perl-dbi perl-dbd-pg perl-moose
 
 WORKDIR /app
 COPY . .
 COPY --from=build /app/local .
+ENV PERL5LIB=/app/lib/perl5
