@@ -133,10 +133,11 @@ $$
 LANGUAGE 'plpgsql' STRICT;
 
 CREATE OR REPLACE FUNCTION source_material()
-RETURNS TABLE (network TEXT, n INTEGER, mm INTEGER, dd INTEGER, year INTEGER, age INTEGER, country TEXT, randip TEXT)
+RETURNS TABLE (network TEXT, mask TEXT, n INTEGER, mm INTEGER, dd INTEGER, year INTEGER, age INTEGER, country TEXT, randip TEXT)
 AS
 $$
   SELECT CONCAT(b.network, '/', b.mask),
+         CONCAT('/', b.mask),
          b.n,
          d.mm, d.dd, b.year,
          b.age,
