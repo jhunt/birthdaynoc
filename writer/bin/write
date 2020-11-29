@@ -37,8 +37,5 @@ $dbh->disconnect;
 
 for my $key (keys %tweets) {
 	$rd->del($key);
-	for my $tweet (shuffle @{$tweets{$key}}) {
-		$tweet =~ s/\s+([.;,)])/$1/g;
-		$rd->lpush($key, $tweet);
-	}
+	$rd->lpush($key, shuffle @{$tweets{$key}});
 }

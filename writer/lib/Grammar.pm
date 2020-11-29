@@ -36,7 +36,26 @@ our $stdlib = {
 sub generate {
 	my ($ast, $vars, $fns) = @_;
 	$fns ||= $Grammar::stdlib;
-	return join(' ', _generate_production($ast, $ast->{_}, $vars, $fns));
+	return adjoin(_generate_production($ast, $ast->{_}, $vars, $fns));
+}
+
+sub adjoin {
+	my (@raw) = @_;
+
+	my (@words, @hold);
+	my $hold = 0;
+
+	# W W P +++ P W P +++ P +++ P W
+	for (@raw) {
+		if (@hold && !ref($_) && !$hold) {
+			push @words, join('', @hold);
+			@hold = ();
+		}
+		push @hold, $_ unless ref($_);
+		$hold = ref($_);
+	}
+	push @words, join('', @hold) if @hold;
+	return join(' ', @words);
 }
 
 sub _pick_random {
@@ -70,6 +89,9 @@ sub _generate_rule {
 		if ($r->{type} eq 'literal') {
 			push @s, $r->{value};
 
+		} elsif ($r->{type} eq 'abut') {
+			push @s, {};
+
 		} elsif ($r->{type} eq 'reference') {
 			die "reference to undefined var!" unless exists $vars->{$r->{value}};
 			my $v = $vars->{$r->{value}};
@@ -97,7 +119,7 @@ sub genall {
 	my ($ast, $vars, $fns) = @_;
 	$fns ||= $Grammar::stdlib;
 	return [
-		map { join(' ', @$_) }
+		map { adjoin(@$_) }
 		_genall_production($ast, $ast->{_}, $vars, $fns)
 	];
 }
@@ -119,6 +141,9 @@ sub _genall_rules {
 	for my $r (@$rules) {
 		if ($r->{type} eq 'literal') {
 			$base = _combine($base, [[$r->{value}]]);
+
+		} elsif ($r->{type} eq 'abut') {
+			$base = _combine($base, [[{}]]);
 
 		} elsif ($r->{type} eq 'reference') {
 			die "reference to undefined var!" unless exists $vars->{$r->{value}};
@@ -216,10 +241,14 @@ sub _parse_rule {
 		#     a $ IDENT
 		#     a STRING
 		#     a [ WEIGHT ]
+		#    an ABUT
 		#     a '|'
 		#  or a ';'
 
-		if ($t->{type} eq '<') {
+		if ($t->{type} eq 'ABUT') {
+			push @rules, { type => 'abut' };
+
+		} elsif ($t->{type} eq '<') {
 			$t = shift @$tokens or die "parse error: unterminated production reference\n";
 			$t->{type} eq 'IDENT' or die "parse error: unexpected '$t->{type}' token after production reference opener\n";
 			my $ref = $t->{value};
@@ -282,7 +311,12 @@ sub tokenize {
 	while ($s !~ m/\G$/gc) {
 		$s =~ m/\G\s*/gc;
 
-		if ($s =~ m/\G([a-zA-Z_-][a-zA-Z0-9_-]*)/gc) {
+		if ($s =~ m/\G\+\+\+/gc) {
+			push @tokens, {
+				type => 'ABUT',
+			};
+
+		} elsif ($s =~ m/\G([a-zA-Z_-][a-zA-Z0-9_-]*)/gc) {
 			push @tokens, {
 				type  => 'IDENT',
 				value => $1,

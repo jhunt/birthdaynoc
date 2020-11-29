@@ -113,4 +113,20 @@ EOF
 ],
 	'should be able to apply function calls to variables');
 
+cmp_deeply(Grammar::genall(Grammar::parse(
+<<'EOF'
+_: "do you like" <cheese> +++ "?"
+ ;
+cheese: "cheddar"
+      | "havarti"
+	  | "muenster"
+	  ;
+EOF
+)), [
+	  "do you like cheddar?",
+	  "do you like havarti?",
+	  "do you like muenster?",
+],
+	'should be able to influence inter-word spacing with the "+++" (ABUT) token');
+
 done_testing;
