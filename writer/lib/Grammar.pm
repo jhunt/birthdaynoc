@@ -299,7 +299,7 @@ sub tokenize {
 				value => $1,
 			};
 
-		} elsif ($s =~ m/\G([0-9]+)%/gc) {
+		} elsif ($s =~ m/\G([0-9]+)/gc) {
 			push @tokens, {
 				type  => 'WEIGHT',
 				value => $1,

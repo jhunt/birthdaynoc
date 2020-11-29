@@ -33,7 +33,7 @@ cmp_deeply(Grammar::tokenize("<>[]():|;~"), [
 	{ type => '~' },
 ], 'special characters auto-tokenize');
 
-cmp_deeply(Grammar::tokenize("[50%]"), [
+cmp_deeply(Grammar::tokenize("[50]"), [
 	{ type => '[' },
 	{ type => 'WEIGHT', value => 50 },
 	{ type => ']' },
@@ -58,7 +58,7 @@ cmp_deeply(Grammar::tokenize('$thing'), [{
 
 cmp_deeply(Grammar::tokenize(
 <<'EOF'
-_ : "literal" <production> $var [25%] ;
+_ : "literal" <production> $var [25] ;
 EOF
 ), [
 	{ type => 'IDENT',  value => '_' },
