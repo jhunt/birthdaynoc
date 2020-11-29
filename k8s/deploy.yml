@@ -1,0 +1,168 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: bdaynoc
+  name:      twitter
+stringData:
+  consumerKey:    ... you'll need to change these ...
+  consumerSecret: ... you'll need to change these ...
+  accessToken:    ... you'll need to change these ...
+  accessSecret:   ... you'll need to change these ...
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: bdaynoc
+  name:      pg
+stringData:
+  username: postgres
+  password: sekrit
+  dsn:      dbi:Pg:dbname=bdaynoc;host=pg.bdaynoc.svc;port=5432;sslmode=disable
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: bdaynoc
+  name:      pg
+spec:
+  selector:
+    matchLabels:
+      component: pg
+
+  serviceName: pg
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        component: pg
+    spec:
+      containers:
+        - name: pg
+          image: postgres:12
+          ports:
+            - name: pg
+              containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg
+                  key:  password
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: bdaynoc
+  name:      pg
+spec:
+  type: ClusterIP
+  selector:
+    component: pg
+  ports:
+    - name: pg
+      port: 5432
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: bdaynoc
+  name:      redis
+spec:
+  selector:
+    matchLabels:
+      component: redis
+
+  serviceName: redis
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        component: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis
+          ports:
+            - name: redis
+              containerPort: 6379
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: bdaynoc
+  name:      redis
+spec:
+  type: ClusterIP
+  selector:
+    component: redis
+  ports:
+    - name: redis
+      port: 6379
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: bdaynoc
+  name:      bot-env
+data:
+  EVERY_X_SECONDS: '3600'
+  JITTER_X_SECONDS: '900'
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: bdaynoc
+  name:      bot
+spec:
+  selector:
+    matchLabels:
+      component: bot
+
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: bot
+
+    spec:
+      containers:
+        - name: bot
+          image: iamjameshunt/bdaynoc-bot
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: bot-env
+          env:
+            - name: REDIS_ADDRESS
+              value: redis.bdaynoc.svc:6379
+
+            - name: TWITTER_CONSUMER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key:  consumerKey
+            - name: TWITTER_CONSUMER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key:  consumerSecret
+            - name: TWITTER_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key:  accessToken
+            - name: TWITTER_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key:  accessSecret

@@ -1,0 +1,50 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: bdaynoc
+  name:      write
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      volumes:
+        - name: grammars
+          configMap:
+            name: grammars
+
+      containers:
+        - name: writer
+          image: iamjameshunt/bdaynoc-writer
+          imagePullPolicy: Always
+
+          volumeMounts:
+            - name: grammars
+              mountPath: /etc/grammars
+
+          command:
+            - /bin/sh
+            - -c
+            - ./bin/write < /etc/grammars/primary.g
+
+          env:
+            - name: REDIS_HOST
+              value: redis.bdaynoc.svc
+            - name: REDIS_PORT
+              value: '6379'
+
+            - name: DATABASE_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: pg
+                  key:  dsn
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pg
+                  key:  username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg
+                  key:  password
