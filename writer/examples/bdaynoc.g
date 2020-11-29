@@ -1,4 +1,6 @@
 _ : <greeting> "to" $network <clarifier> <followup> <hashtags>
+  | <on-this-day> $network <clarifier> <gets-older> <hashtags>
+  | <do-you-know> $network +++ "?" <they-age-up> <today> +++ "!"
   ;
 
 greeting : "wishing a" <adj> <bday>
@@ -18,9 +20,49 @@ bday : "birthday"
      | "🎂 day"
      ;
 
+on-this-day: "today"
+           | "on this day"
+           | "today, this" ord($dd) "of" mon($mm)
+           ;
+
+do-you-know: "do you know"
+           | "have you met"
+           | "do you know my good friend"
+           | "have you met my friend"
+           ;
+
+they-age-up: <they-plural> "turn" $age
+           | <they-plural> "turn" $age "years old"
+		   | <they-plural> "celebrate their" ord($age)
+		   | <they-plural> "celebrate their" ord($age) <bday>
+           | <they-singular> "turns" $age
+           | <they-singular> "turns" $age "years old"
+		   | <they-singular> "celebrates its" ord($age)
+		   | <they-singular> "celebrates its" ord($age) <bday>
+           ;
+
+they-plural : "they"
+            | "all" $n <ip-plurals>
+            ;
+
+they-singular : "it"
+              | "the subnet"
+              | "the" <whole> "subnet"
+              | "the" <whole> $mask
+              ;
+
+whole : "whole"
+      | "entire"
+      ;
+
+today : [100] "today"
+      | "on this very day"
+      | "on this day"
+      ;
+
 clarifier :
           | "(and all" $n <ip-plural> "in it)"
-          | "(and all of its" $n <ip-plural> ")"
+          | "(and all of its" $n <ip-plural> +++ ")"
           ;
 
 ip-plural : "ips"
@@ -28,9 +70,15 @@ ip-plural : "ips"
           ;
 
 followup :
-         | "." <age-today>
-         | ";" <born-today>
+         | +++ "." <age-today>
+         | +++ ";" <born-today>
          ;
+
+gets-older : "turns" $age "today!!"
+           | "celebrates" $age "years in" $location
+           | "celebrates" $age "years!"
+           | "celebrates their" ord($age) "birthday today"
+		   ;
 
 age-today : "it turns" $age "today!"
           | "celebrating" $age "years in" $location

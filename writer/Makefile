@@ -9,10 +9,10 @@ push: build
 
 examples: build
 	docker run --rm -i $(IMAGE_NAME) bin/genall < examples/bdaynoc.g \
-	  subnet a.b.c.d/m n 25 years 15 location somewhere
+	  network a.b.c.d/m mask /24 n 256 age 15 mm 01 dd 14 location somewhere
 example: build
 	docker run --rm -i $(IMAGE_NAME) bin/generate $(N) < examples/bdaynoc.g \
-	  subnet a.b.c.d/m n 25 years 15 location somewhere
+	  network a.b.c.d/m mask /24 n 256 age 15 mm 01 dd 14 location somewhere
 
 test:
 	docker build -t $(IMAGE_NAME):test -f Dockerfile.test .
