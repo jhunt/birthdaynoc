@@ -38,4 +38,6 @@ $dbh->disconnect;
 for my $key (keys %tweets) {
 	$rd->del($key);
 	$rd->lpush($key, shuffle @{$tweets{$key}});
+	print "[$key]: ".scalar(@{$tweets{$key}})." tweets\n";
 }
+print "DONE\n";
