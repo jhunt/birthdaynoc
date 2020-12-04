@@ -1,6 +1,6 @@
-_ : <greeting> "to" $network <clarifier> <followup> <hashtags>
-  | <on-this-day> $network <clarifier> <gets-older> <hashtags>
-  | <do-you-know> $network +++ "?" <they-age-up> <today> +++ "!"
+_ : <greeting> "to" $network <clarifier> <followup> <exclam> <hashtags>
+  | <on-this-day> $network <clarifier> <gets-older> <exclam> <hashtags>
+  | <do-you-know> $network +++ "?" <they-age-up> <today> <exclam>
   ;
 
 greeting : "wishing a" <adj> <bday>
@@ -12,6 +12,31 @@ adj : "happy"
     | "joyous"
     | "splendid"
     ;
+
+exclam : [1]
+       | +++ "!!!"
+       | +++ "!!"
+       | +++ "!"
+       | <emoji>
+       | +++ "!!!" <emoji>
+       | +++ "!!" <emoji>
+       | +++ "!" <emoji>
+       ;
+
+emoji : "🙂🎂"
+      | "🎊"
+      | "🎉🎊"
+      | "🍰"
+      | "🍰🍰🍰"
+      | "🎉🎉"
+      | "🎉🍰🎉"
+      | "🎉🎂🎉"
+      | "🎂🍰🎉"
+      | "🍰😃🎊"
+      | "😀"
+      | "😁"
+      | "😁😃"
+      ;
 
 bday : "birthday"
      | "bday"
@@ -33,12 +58,12 @@ do-you-know: "do you know"
 
 they-age-up: <they-plural> "turn" $age
            | <they-plural> "turn" $age "years old"
-		   | <they-plural> "celebrate their" ord($age)
-		   | <they-plural> "celebrate their" ord($age) <bday>
+           | <they-plural> "celebrate their" ord($age)
+           | <they-plural> "celebrate their" ord($age) <bday>
            | <they-singular> "turns" $age
            | <they-singular> "turns" $age "years old"
-		   | <they-singular> "celebrates its" ord($age)
-		   | <they-singular> "celebrates its" ord($age) <bday>
+           | <they-singular> "celebrates its" ord($age)
+           | <they-singular> "celebrates its" ord($age) <bday>
            ;
 
 they-plural : "they"
@@ -74,17 +99,17 @@ followup :
          | +++ ";" <born-today>
          ;
 
-gets-older : "turns" $age "today!!"
+gets-older : "turns" $age "today"
            | "celebrates" $age "years in" $location
-           | "celebrates" $age "years!"
-           | "celebrates their" ord($age) "birthday today"
-		   ;
+           | "celebrates" $age "years"
+           | "celebrates their" ord($age) "birthday"
+           ;
 
-age-today : "it turns" $age "today!"
+age-today : "it turns" $age "today"
           | "celebrating" $age "years in" $location
           | "celebrating" $age "years"
           | "happy" ord($age)
-          | "you only get to turn" $age "once!"
+          | "you only get to turn" $age "once"
           ;
 
 born-today : "born on this day in" $year
