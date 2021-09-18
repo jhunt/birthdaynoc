@@ -1,0 +1,47 @@
+version: '3'
+services:
+  db:
+    image: postgres:12
+    volumes:
+      - $PWD/compose/_/pg:/var/lib/postgresql/data
+      - $PWD/compose/schema.sql:/docker-entrypoint-initdb.d/00-schema.sql
+      - $PWD/compose/data.sql:/docker-entrypoint-initdb.d/10-data.sql
+    environment:
+      - POSTGRES_PASSWORD=Za3Chanua1Gaix9ohsheiroo1ouxoo8exeiqu6vahchaPh0k
+      - POSTGRES_DB=bdaynoc
+
+  redis:
+    image: redis:6
+    volumes:
+      - $PWD/compose/_/redis:/data
+
+  bot:
+    restart: on-failure
+    depends_on: [redis]
+    image: iamjameshunt/bdaynoc-bot
+    environment:
+      - EVERY_X_SECONDS=3600
+      - JITTER_X_SECONDS=900
+      - REDIS_ADDRESS=redis:6379
+      - TWITTER_CONSUMER_KEY
+      - TWITTER_CONSUMER_SECRET
+      - TWITTER_ACCESS_TOKEN
+      - TWITTER_ACCESS_SECRET
+
+  writer:
+    restart: on-failure
+    depends_on: [redis, db]
+    image: iamjameshunt/bdaynoc-writer
+    volumes:
+      - $PWD/compose/grammar.g:/etc/grammar:ro
+    command:
+      - /bin/sh
+      - -c
+      - ./bin/write < /etc/grammar;
+        while true; do sleep 30; done
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DATABASE_DSN=dbi:Pg:dbname=bdaynoc;host=db;port=5432;sslmode=disable
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=Za3Chanua1Gaix9ohsheiroo1ouxoo8exeiqu6vahchaPh0k
